@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>系统管理 - 维修下单系统</title>
+    <!-- 引入Bootstrap CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <!-- 引入Font Awesome图标 -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css"
+    />
+    <style>
+      /* 全局样式 */
+      body {
+        background-color: #f8f9fa;
+      }
+
+      /* 侧边栏+主内容布局 */
+      .layout-container {
+        display: flex;
+        min-height: 100vh;
+      }
+
+      /* 侧边栏样式 */
+      .sidebar {
+        width: 220px;
+        background-color: #2c3e50;
+        color: #fff;
+        padding: 1.5rem 0;
+        flex-shrink: 0;
+      }
+
+      .sidebar .user-info {
+        text-align: center;
+        padding: 0 1rem 1.5rem;
+        border-bottom: 1px solid #444;
+        margin-bottom: 1rem;
+      }
+
+      .sidebar .user-info h5 {
+        margin-top: 0.5rem;
+        font-size: 1rem;
+      }
+
+      .sidebar .nav-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      .sidebar .nav-list li {
+        margin: 0.2rem 0;
+      }
+
+      .sidebar .nav-list a {
+        display: block;
+        padding: 0.75rem 1.5rem;
+        color: #ddd;
+        text-decoration: none;
+        transition: background-color 0.3s;
+      }
+
+      .sidebar .nav-list a.active,
+      .sidebar .nav-list a:hover {
+        background-color: #1a252f;
+        color: #fff;
+      }
+
+      .sidebar .nav-list a i {
+        margin-right: 8px;
+        width: 16px;
+        text-align: center;
+      }
+
+      /* 主内容区域 */
+      .main-content {
+        flex: 1;
+        padding: 2rem;
+        overflow-y: auto;
+      }
+
+      /* 卡片样式 */
+      .content-card {
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+      }
+
+      .content-card h4 {
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid #eee;
+        color: #2c3e50;
+      }
+
+      /* 数据概览卡片 */
+      .stats-card {
+        border-radius: 8px;
+        padding: 1.5rem;
+        color: #fff;
+        margin-bottom: 1.5rem;
+      }
+
+      .stats-card-primary {
+        background-color: #0d6efd;
+      }
+
+      .stats-card-success {
+        background-color: #198754;
+      }
+
+      .stats-card-warning {
+        background-color: #ffc107;
+      }
+
+      .stats-card-danger {
+        background-color: #dc3545;
+      }
+
+      .stats-card .stats-value {
+        font-size: 2rem;
+        font-weight: 600;
+        margin: 0.5rem 0;
+      }
+
+      .stats-card .stats-desc {
+        font-size: 0.9rem;
+        opacity: 0.9;
+      }
+
+      /* 订单状态标签 */
+      .status-tag {
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.85rem;
+      }
+
+      .status-pending {
+        background-color: #fff3cd;
+        color: #856404;
+      }
+
+      .status-receiving {
+        background-color: #cce5ff;
+        color: #004085;
+      }
+
+      .status-repairing {
+        background-color: #d1ecf1;
+        color: #0c5460;
+      }
+
+      .status-finished {
+        background-color: #d4edda;
+        color: #155724;
+      }
+
+      .status-cancelled {
+        background-color: #f8d7da;
+        color: #721c24;
+      }
+
+      /* 加载动画 */
+      .loading-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.1);
+        z-index: 9999;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .loading-spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #0d6efd;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      /* 模态框样式增强 */
+      .modal-header {
+        background-color: #0d6efd;
+        color: #fff;
+      }
+
+      /* 搜索框样式 */
+      .search-box {
+        margin-bottom: 1rem;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* 响应式适配 */
+      @media (max-width: 768px) {
+        .layout-container {
+          flex-direction: column;
+        }
+
+        .sidebar {
+          width: 100%;
+          padding: 1rem 0;
+        }
+
+        .sidebar .nav-list {
+          display: flex;
+          overflow-x: auto;
+        }
+
+        .sidebar .nav-list li {
+          flex-shrink: 0;
+        }
+
+        .main-content {
+          padding: 1rem;
+        }
+
+        .stats-card .stats-value {
+          font-size: 1.5rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- 加载动画 -->
+    <div class="loading-overlay" id="loadingOverlay">
+      <div class="loading-spinner"></div>
+    </div>
+
+    <!-- 布局容器 -->
+    <div class="layout-container">
+      <!-- 侧边栏 -->
+      <div class="sidebar">
+        <div class="user-info">
+          <i class="fa fa-shield fa-2x"></i>
+          <h5 id="userName">系统管理员</h5>
+          <small>超级管理员</small>
+        </div>
+        <ul class="nav-list">
+          <li>
+            <a href="#dashboard" class="active" data-target="dashboard"
+              ><i class="fa fa-dashboard"></i> 数据概览</a
+            >
+          </li>
+          <li>
+            <a href="#userManage" data-target="userManage"
+              ><i class="fa fa-users"></i> 用户管理</a
+            >
+          </li>
+          <li>
+            <a href="#orderManage" data-target="orderManage"
+              ><i class="fa fa-list-alt"></i> 订单管理</a
+            >
+          </li>
+          <li>
+            <a href="login.html" onclick="logout()"
+              ><i class="fa fa-sign-out"></i> 退出登录</a
+            >
+          </li>
+        </ul>
+      </div>
+
+      <!-- 主内容区域 -->
+      <div class="main-content">
+        <!-- 数据概览卡片 -->
+        <div class="content-card" id="dashboard">
+          <h4><i class="fa fa-dashboard"></i> 系统数据概览</h4>
+          <div class="row">
+            <div class="col-md-3 col-sm-6">
+              <div class="stats-card stats-card-primary">
+                <i class="fa fa-user-o"></i>
+                <div class="stats-value" id="totalUser">0</div>
+                <div class="stats-desc">总用户数</div>
+              </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+              <div class="stats-card stats-card-warning">
+                <i class="fa fa-clock-o"></i>
+                <div class="stats-value" id="pendingOrder">0</div>
+                <div class="stats-desc">待接单订单</div>
+              </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+              <div class="stats-card stats-card-success">
+                <i class="fa fa-check-circle-o"></i>
+                <div class="stats-value" id="finishedOrder">0</div>
+                <div class="stats-desc">已完成订单</div>
+              </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+              <div class="stats-card stats-card-danger">
+                <i class="fa fa-wrench"></i>
+                <div class="stats-value" id="totalOrder">0</div>
+                <div class="stats-desc">总订单数</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 用户管理卡片 -->
+        <div class="content-card" id="userManage" style="display: none">
+          <h4><i class="fa fa-users"></i> 系统用户管理</h4>
+          <div class="search-box">
+            <input
+              type="text"
+              class="form-control"
+              id="userSearch"
+              placeholder="输入用户名搜索"
+            />
+            <button class="btn btn-primary" onclick="searchUser()">搜索</button>
+            <button class="btn btn-success" onclick="refreshUserList()">
+              刷新
+            </button>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-hover table-bordered">
+              <thead class="table-light">
+                <tr>
+                  <th>用户ID</th>
+                  <th>用户名</th>
+                  <th>真实姓名</th>
+                  <th>手机号</th>
+                  <th>角色</th>
+                  <th>状态</th>
+                  <th>创建时间</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody id="userTableBody">
+                <!-- 用户数据动态加载 -->
+              </tbody>
+            </table>
+          </div>
+          <div
+            id="emptyUserTip"
+            class="text-center text-muted py-3"
+            style="display: none"
+          >
+            暂无用户数据
+          </div>
+        </div>
+
+        <!-- 订单管理卡片 -->
+        <div class="content-card" id="orderManage" style="display: none">
+          <h4><i class="fa fa-list-alt"></i> 全量订单管理</h4>
+          <div class="search-box">
+            <input
+              type="text"
+              class="form-control"
+              id="orderSearch"
+              placeholder="输入订单编号/维修类型搜索"
+            />
+            <select
+              class="form-select"
+              id="orderStatusFilter"
+              style="width: 150px"
+            >
+              <option value="">全部状态</option>
+              <option value="pending">待接单</option>
+              <option value="receiving">已接单</option>
+              <option value="repairing">维修中</option>
+              <option value="finished">已完成</option>
+              <option value="cancelled">已取消</option>
+            </select>
+            <button class="btn btn-primary" onclick="searchOrder()">
+              搜索
+            </button>
+            <button class="btn btn-success" onclick="refreshOrderList()">
+              刷新
+            </button>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-hover table-bordered">
+              <thead class="table-light">
+                <tr>
+                  <th>订单ID</th>
+                  <th>订单编号</th>
+                  <th>用户ID</th>
+                  <th>维修类型</th>
+                  <th>联系电话</th>
+                  <th>订单状态</th>
+                  <th>下单时间</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody id="orderTableBody">
+                <!-- 订单数据动态加载 -->
+              </tbody>
+            </table>
+          </div>
+          <div
+            id="emptyOrderTip"
+            class="text-center text-muted py-3"
+            style="display: none"
+          >
+            暂无订单数据
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 更新用户状态模态框 -->
+    <div
+      class="modal fade"
+      id="updateUserStatusModal"
+      tabindex="-1"
+      aria-labelledby="updateUserStatusModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="updateUserStatusModalLabel">
+              更新用户状态
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <input type="hidden" id="modalUserId" />
+            <div class="mb-3">
+              <label class="form-label">用户名</label>
+              <input
+                type="text"
+                class="form-control"
+                id="modalUsername"
+                readonly
+              />
+            </div>
+            <div class="mb-3">
+              <label class="form-label">选择状态</label>
+              <select class="form-select" id="modalUserStatus">
+                <option value="1">启用</option>
+                <option value="0">禁用</option>
+              </select>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              取消
+            </button>
+            <button
+              type="button"
+              class="btn btn-primary"
+              onclick="confirmUpdateUserStatus()"
+            >
+              确认更新
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 更新订单状态模态框（管理员版） -->
+    <div
+      class="modal fade"
+      id="adminUpdateStatusModal"
+      tabindex="-1"
+      aria-labelledby="adminUpdateStatusModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="adminUpdateStatusModalLabel">
+              更新订单状态
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <input type="hidden" id="adminStatusOrderId" />
+            <div class="mb-3">
+              <label class="form-label">订单编号</label>
+              <input
+                type="text"
+                class="form-control"
+                id="adminStatusOrderNo"
+                readonly
+              />
+            </div>
+            <div class="mb-3">
+              <label class="form-label">选择新状态</label>
+              <select class="form-select" id="adminNewStatus">
+                <option value="pending">待接单</option>
+                <option value="receiving">已接单</option>
+                <option value="repairing">维修中</option>
+                <option value="finished">已完成</option>
+                <option value="cancelled">已取消</option>
+              </select>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              取消
+            </button>
+            <button
+              type="button"
+              class="btn btn-primary"
+              onclick="confirmAdminUpdateStatus()"
+            >
+              确认更新
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 引入JS -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.4/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      // 全局用户信息
+      let userInfo = {};
+      // 模态框实例
+      const userStatusModal = new bootstrap.Modal(
+        document.getElementById("updateUserStatusModal")
+      );
+      const adminStatusModal = new bootstrap.Modal(
+        document.getElementById("adminUpdateStatusModal")
+      );
+
+      $(document).ready(function () {
+        // 1. 初始化用户信息
+        initUserInfo();
+
+        // 2. 侧边栏导航切换
+        $(".nav-list a").click(function (e) {
+          e.preventDefault();
+          // 切换激活状态
+          $(".nav-list a").removeClass("active");
+          $(this).addClass("active");
+          // 切换内容显示
+          const target = $(this).data("target");
+          $(".content-card").hide();
+          $("#" + target).show();
+
+          // 根据目标加载对应数据
+          if (target === "dashboard") {
+            loadDashboardData();
+          } else if (target === "userManage") {
+            loadUserList();
+          } else if (target === "orderManage") {
+            loadAllOrderList();
+          }
+        });
+
+        // 初始化默认显示数据概览
+        $("#dashboard").show();
+        loadDashboardData();
+      });
+
+      /**
+       * 初始化用户信息
+       */
+      function initUserInfo() {
+        // 从本地存储获取用户信息
+        const userInfoStr = localStorage.getItem("userInfo");
+        if (!userInfoStr) {
+          // 未登录，跳回登录页
+          window.location.href = "login.html";
+          return;
+        }
+
+        userInfo = JSON.parse(userInfoStr);
+        $("#userName").text(userInfo.realName || userInfo.username);
+
+        // 验证角色是否为管理员
+        if (userInfo.role !== "admin") {
+          alert("无管理员操作权限！");
+          window.location.href = "login.html";
+        }
+      }
+
+      /**
+       * 加载数据概览
+       */
+      function loadDashboardData() {
+        showLoading(true);
+
+        // 模拟加载数据（实际应对接后端统计接口）
+        setTimeout(() => {
+          // 1. 加载用户总数（对接/admin/user/list）
+          $.ajax({
+            url: "http://localhost:8080/api/admin/user/list",
+            type: "GET",
+            success: function (res) {
+              if (res.code === 200) {
+                $("#totalUser").text(res.data.length);
+              }
+            },
+          });
+
+          // 2. 加载订单统计（模拟数据，实际应对接后端统计接口）
+          $("#pendingOrder").text("5");
+          $("#finishedOrder").text("23");
+          $("#totalOrder").text("32");
+
+          showLoading(false);
+        }, 800);
+      }
+
+      /**
+       * 加载用户列表
+       */
+      function loadUserList() {
+        showLoading(true);
+        $.ajax({
+          url: "http://localhost:8080/api/admin/user/list",
+          type: "GET",
+          timeout: 10000,
+          success: function (response) {
+            if (response.code === 200) {
+              const userList = response.data || [];
+              renderUserList(userList);
+            } else {
+              alert("加载用户列表失败：" + (response.msg || "未知错误"));
+              renderUserList([]);
+            }
+          },
+          error: function (xhr, status, error) {
+            alert("加载用户列表失败：" + (error || "服务器异常"));
+            renderUserList([]);
+          },
+          complete: function () {
+            showLoading(false);
+          },
+        });
+      }
+
+      /**
+       * 渲染用户列表
+       */
+      function renderUserList(userList) {
+        const $tableBody = $("#userTableBody");
+        const $emptyTip = $("#emptyUserTip");
+        $tableBody.empty();
+
+        if (userList.length === 0) {
+          $emptyTip.show();
+          return;
+        }
+
+        $emptyTip.hide();
+        userList.forEach((user) => {
+          const createTime = formatDateTime(user.createTime);
+          // 角色显示
+          const roleText =
+            {
+              user: "普通用户",
+              workshop: "车间人员",
+              admin: "管理员",
+            }[user.role] || user.role;
+          // 状态显示
+          const statusText =
+            user.status === 1
+              ? '<span class="badge bg-success">启用</span>'
+              : '<span class="badge bg-danger">禁用</span>';
+
+          const tr = `
+                    <tr>
+                        <td>${user.id}</td>
+                        <td>${user.username}</td>
+                        <td>${user.realName || "-"}</td>
+                        <td>${user.phone || "-"}</td>
+                        <td>${roleText}</td>
+                        <td>${statusText}</td>
+                        <td>${createTime}</td>
+                        <td>
+                            <button class="btn btn-sm btn-warning" onclick="showUserStatusModal(${
+                              user.id
+                            }, '${user.username}', ${user.status})">
+                                ${user.status === 1 ? "禁用" : "启用"}
+                            </button>
+                            <button class="btn btn-sm btn-info" onclick="viewUserDetail(${
+                              user.id
+                            })">查看</button>
+                        </td>
+                    </tr>
+                `;
+          $tableBody.append(tr);
+        });
+      }
+
+      /**
+       * 搜索用户
+       */
+      function searchUser() {
+        const keyword = $("#userSearch").val().trim();
+        if (!keyword) {
+          loadUserList();
+          return;
+        }
+
+        showLoading(true);
+        // 模拟搜索（实际应对接后端搜索接口）
+        $.ajax({
+          url: "http://localhost:8080/api/admin/user/list",
+          type: "GET",
+          success: function (response) {
+            if (response.code === 200) {
+              const userList = response.data || [];
+              const filteredList = userList.filter(
+                (user) =>
+                  user.username.includes(keyword) ||
+                  (user.realName && user.realName.includes(keyword))
+              );
+              renderUserList(filteredList);
+            }
+          },
+          complete: function () {
+            showLoading(false);
+          },
+        });
+      }
+
+      /**
+       * 刷新用户列表
+       */
+      function refreshUserList() {
+        $("#userSearch").val("");
+        loadUserList();
+      }
+
+      /**
+       * 显示用户状态更新模态框
+       */
+      function showUserStatusModal(userId, username, status) {
+        $("#modalUserId").val(userId);
+        $("#modalUsername").val(username);
+        $("#modalUserStatus").val(status);
+        userStatusModal.show();
+      }
+
+      /**
+       * 确认更新用户状态
+       */
+      function confirmUpdateUserStatus() {
+        const userId = $("#modalUserId").val();
+        const newStatus = $("#modalUserStatus").val();
+
+        showLoading(true);
+        // 模拟更新（实际应对接后端用户状态更新接口）
+        setTimeout(() => {
+          alert(
+            `用户 ${$("#modalUsername").val()} 状态已更新为：${
+              newStatus === "1" ? "启用" : "禁用"
+            }`
+          );
+          userStatusModal.hide();
+          loadUserList();
+          showLoading(false);
+        }, 500);
+      }
+
+      /**
+       * 加载全量订单列表
+       */
+      function loadAllOrderList() {
+        showLoading(true);
+        // 模拟加载所有订单（实际应对接后端全量订单接口）
+        $.ajax({
+          url: "http://localhost:8080/api/workshop/pending/orders",
+          type: "GET",
+          success: function (response) {
+            if (response.code === 200) {
+              const allOrders = response.data || [];
+              // 合并所有状态订单（实际后端应返回全量）
+              renderAllOrderList(allOrders);
+            } else {
+              alert("加载订单列表失败：" + (response.msg || "未知错误"));
+              renderAllOrderList([]);
+            }
+          },
+          error: function (xhr, status, error) {
+            alert("加载订单列表失败：" + (error || "服务器异常"));
+            renderAllOrderList([]);
+          },
+          complete: function () {
+            showLoading(false);
+          },
+        });
+      }
+
+      /**
+       * 渲染全量订单列表
+       */
+      function renderAllOrderList(orderList) {
+        const $tableBody = $("#orderTableBody");
+        const $emptyTip = $("#emptyOrderTip");
+        $tableBody.empty();
+
+        if (orderList.length === 0) {
+          $emptyTip.show();
+          return;
+        }
+
+        $emptyTip.hide();
+        orderList.forEach((order) => {
+          const createTime = formatDateTime(order.createTime);
+          const statusTag = getStatusTag(order.orderStatus);
+
+          const tr = `
+                    <tr>
+                        <td>${order.id}</td>
+                        <td>${order.orderNo}</td>
+                        <td>${order.userId}</td>
+                        <td>${order.repairType}</td>
+                        <td>${order.contactPhone}</td>
+                        <td>${statusTag}</td>
+                        <td>${createTime}</td>
+                        <td>
+                            <button class="btn btn-sm btn-warning" onclick="showAdminStatusModal(${order.id}, '${order.orderNo}', '${order.orderStatus}')">更新状态</button>
+                            <button class="btn btn-sm btn-info" onclick="viewOrderDetail(${order.id})">查看</button>
+                        </td>
+                    </tr>
+                `;
+          $tableBody.append(tr);
+        });
+      }
+
+      /**
+       * 搜索订单
+       */
+      function searchOrder() {
+        const keyword = $("#orderSearch").val().trim();
+        const status = $("#orderStatusFilter").val();
+
+        showLoading(true);
+        // 模拟搜索（实际应对接后端搜索接口）
+        $.ajax({
+          url: "http://localhost:8080/api/workshop/pending/orders",
+          type: "GET",
+          success: function (response) {
+            if (response.code === 200) {
+              let filteredList = response.data || [];
+
+              // 关键词筛选
+              if (keyword) {
+                filteredList = filteredList.filter(
+                  (order) =>
+                    order.orderNo.includes(keyword) ||
+                    order.repairType.includes(keyword)
+                );
+              }
+
+              // 状态筛选
+              if (status) {
+                filteredList = filteredList.filter(
+                  (order) => order.orderStatus === status
+                );
+              }
+
+              renderAllOrderList(filteredList);
+            }
+          },
+          complete: function () {
+            showLoading(false);
+          },
+        });
+      }
+
+      /**
+       * 刷新订单列表
+       */
+      function refreshOrderList() {
+        $("#orderSearch").val("");
+        $("#orderStatusFilter").val("");
+        loadAllOrderList();
+      }
+
+      /**
+       * 显示管理员更新订单状态模态框
+       */
+      function showAdminStatusModal(orderId, orderNo, currentStatus) {
+        $("#adminStatusOrderId").val(orderId);
+        $("#adminStatusOrderNo").val(orderNo);
+        $("#adminNewStatus").val(currentStatus);
+        adminStatusModal.show();
+      }
+
+      /**
+       * 确认管理员更新订单状态
+       */
+      function confirmAdminUpdateStatus() {
+        const orderId = $("#adminStatusOrderId").val();
+        const newStatus = $("#adminNewStatus").val();
+
+        showLoading(true);
+        $.ajax({
+          url: "http://localhost:8080/api/workshop/update/status",
+          type: "POST",
+          contentType: "application/json",
+          data: JSON.stringify({
+            orderId: parseInt(orderId),
+            status: newStatus,
+          }),
+          timeout: 10000,
+          success: function (response) {
+            if (response.code === 200 && response.data) {
+              alert("订单状态更新成功！");
+              adminStatusModal.hide();
+              loadAllOrderList();
+            } else {
+              alert("状态更新失败：" + (response.msg || "未知错误"));
+            }
+          },
+          error: function (xhr, status, error) {
+            alert("状态更新失败：" + (error || "服务器异常"));
+          },
+          complete: function () {
+            showLoading(false);
+          },
+        });
+      }
+
+      /**
+       * 查看用户详情（预留）
+       */
+      function viewUserDetail(userId) {
+        alert("查看用户详情，用户ID：" + userId);
+      }
+
+      /**
+       * 查看订单详情（预留）
+       */
+      function viewOrderDetail(orderId) {
+        alert("查看订单详情，订单ID：" + orderId);
+      }
+
+      /**
+       * 退出登录
+       */
+      function logout() {
+        if (confirm("确定要退出登录吗？")) {
+          localStorage.removeItem("userInfo");
+          window.location.href = "login.html";
+        }
+      }
+
+      /**
+       * 格式化时间
+       */
+      function formatDateTime(isoStr) {
+        if (!isoStr) return "";
+        const date = new Date(isoStr);
+        return date.toLocaleString("zh-CN", {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+      }
+
+      /**
+       * 获取状态标签
+       */
+      function getStatusTag(status) {
+        const statusMap = {
+          pending: { text: "待接单", class: "status-pending" },
+          receiving: { text: "已接单", class: "status-receiving" },
+          repairing: { text: "维修中", class: "status-repairing" },
+          finished: { text: "已完成", class: "status-finished" },
+          cancelled: { text: "已取消", class: "status-cancelled" },
+        };
+        const info = statusMap[status] || { text: status, class: "" };
+        return `<span class="status-tag ${info.class}">${info.text}</span>`;
+      }
+
+      /**
+       * 显示/隐藏加载动画
+       */
+      function showLoading(show) {
+        if (show) {
+          $("#loadingOverlay").css("display", "flex");
+        } else {
+          $("#loadingOverlay").hide();
+        }
+      }
+    </script>
+  </body>
+</html>

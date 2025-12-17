@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>维修下单系统 - 登录</title>
+    <!-- 引入Bootstrap CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <!-- 引入Font Awesome图标 -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css"
+    />
+    <style>
+      /* 全局样式 */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        height: 100%;
+        overflow: hidden; /* 隐藏滚动条 */
+      }
+
+      /* 背景图片容器 */
+      .login-bg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: url("https://imgs.699pic.com/images/600/202/867.jpg!detail.v1")
+          no-repeat center center;
+        background-size: cover; /* 自适应覆盖整个容器 */
+        filter: brightness(0.85); /* 降低亮度提升登录框可读性 */
+        z-index: 1;
+      }
+
+      /* 登录表单容器 - 水平垂直居中 */
+      .login-container {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%); /* 真正居中 */
+        width: 100%;
+        max-width: 420px; /* 固定最大宽度，保证表单规整 */
+        background-color: rgba(255, 255, 255, 0.95);
+        padding: 2.5rem;
+        border-radius: 12px;
+        box-shadow: 0 0 25px rgba(0, 0, 0, 0.2);
+        z-index: 2;
+        animation: fadeIn 0.5s ease-in-out;
+      }
+
+      /* 登录标题样式 */
+      .login-title {
+        text-align: center;
+        margin-bottom: 2rem;
+        color: #2c3e50;
+        font-weight: 600;
+        font-size: 1.5rem;
+      }
+
+      .login-title i {
+        color: #0d6efd;
+        margin-right: 8px;
+      }
+
+      /* 表单容器 - 保证标签和输入框对齐 */
+      .form-group-wrapper {
+        width: 100%;
+        max-width: 350px; /* 统一表单宽度，保证对齐 */
+        margin: 0 auto; /* 表单整体居中 */
+      }
+
+      /* 表单标签样式 - 固定宽度，文本右对齐 */
+      .form-label {
+        display: inline-block;
+        width: 80px; /* 固定标签宽度，保证对齐 */
+        text-align: right;
+        margin-right: 10px;
+        font-weight: 500;
+        color: #495057;
+      }
+
+      /* 表单输入框样式 - 统一宽度，对齐 */
+      .form-control {
+        display: inline-block;
+        width: calc(100% - 90px); /* 减去标签宽度+间距，保证总宽度一致 */
+        border-radius: 6px;
+        padding: 0.75rem 1rem;
+        border: 1px solid #ced4da;
+        transition: all 0.3s ease;
+        vertical-align: middle; /* 与标签垂直对齐 */
+      }
+
+      .form-control:focus {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+      }
+
+      /* 记住我选项 - 对齐处理 */
+      .remember-wrapper {
+        max-width: 350px;
+        margin: 0 auto;
+        padding-left: 90px; /* 与输入框左对齐 */
+        margin-bottom: 1.5rem;
+      }
+
+      /* 按钮样式 */
+      .btn-login {
+        width: 100%;
+        max-width: 350px; /* 与表单宽度一致 */
+        margin: 0 auto;
+        display: block; /* 居中显示 */
+        padding: 0.75rem;
+        border-radius: 6px;
+        background-color: #0d6efd;
+        border: none;
+        font-weight: 500;
+        transition: background-color 0.3s ease;
+        position: relative;
+        overflow: hidden;
+      }
+
+      /* 登录按钮加载状态 */
+      .btn-login.loading {
+        background-color: #0b5ed7;
+        cursor: not-allowed;
+      }
+
+      .btn-login.loading::after {
+        content: "";
+        position: absolute;
+        width: 16px;
+        height: 16px;
+        top: 50%;
+        right: 20px;
+        transform: translateY(-50%);
+        border: 2px solid #fff;
+        border-radius: 50%;
+        border-top-color: transparent;
+        animation: spin 0.8s linear infinite;
+      }
+
+      .btn-login:hover:not(.loading) {
+        background-color: #0b5ed7;
+      }
+
+      /* 提示信息样式 */
+      .alert-message {
+        max-width: 350px;
+        margin: 0 auto 1rem;
+        padding: 0.75rem;
+        border-radius: 6px;
+        display: none; /* 默认隐藏 */
+      }
+
+      /* 动画效果 */
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translate(-50%, -40%); /* 初始位置微调 */
+        }
+        to {
+          opacity: 1;
+          transform: translate(-50%, -50%);
+        }
+      }
+
+      @keyframes spin {
+        0% {
+          transform: translateY(-50%) rotate(0deg);
+        }
+        100% {
+          transform: translateY(-50%) rotate(360deg);
+        }
+      }
+
+      /* 响应式适配 */
+      @media (max-width: 576px) {
+        .login-container {
+          max-width: 90%;
+          padding: 2rem 1.5rem;
+        }
+
+        /* 移动端简化对齐，标签上显示 */
+        .form-label {
+          display: block;
+          width: 100%;
+          text-align: left;
+          margin-bottom: 0.5rem;
+        }
+
+        .form-control {
+          width: 100%;
+        }
+
+        .remember-wrapper {
+          padding-left: 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- 背景图片容器 -->
+    <div class="login-bg"></div>
+
+    <!-- 登录表单容器 -->
+    <div class="login-container">
+      <h3 class="login-title"><i class="fa fa-wrench"></i> 维修下单系统</h3>
+      <!-- 提示信息 -->
+      <div class="alert-message alert-danger" id="errorAlert"></div>
+      <form id="loginForm">
+        <!-- 表单分组容器（保证对齐） -->
+        <div class="form-group-wrapper mb-3">
+          <label for="username" class="form-label">用户名</label>
+          <input
+            type="text"
+            class="form-control"
+            id="username"
+            placeholder="请输入用户名"
+            required
+          />
+        </div>
+        <div class="form-group-wrapper mb-3">
+          <label for="password" class="form-label">密码</label>
+          <input
+            type="password"
+            class="form-control"
+            id="password"
+            placeholder="请输入密码"
+            required
+          />
+        </div>
+
+        <!-- 记住我选项 -->
+        <div class="remember-wrapper form-check">
+          <input type="checkbox" class="form-check-input" id="rememberMe" />
+          <label class="form-check-label" for="rememberMe">记住我</label>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-login" id="loginBtn">
+          登录
+        </button>
+      </form>
+    </div>
+
+    <!-- 引入Bootstrap JS和jQuery -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.4/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      // 登录表单提交处理
+      $(document).ready(function () {
+        // 从本地存储读取用户名
+        if (localStorage.getItem("rememberMe") === "true") {
+          $("#rememberMe").prop("checked", true);
+          $("#username").val(localStorage.getItem("username"));
+        }
+
+        $("#loginForm").submit(function (e) {
+          e.preventDefault(); // 阻止默认提交
+          const username = $("#username").val().trim();
+          const password = $("#password").val().trim();
+          const rememberMe = $("#rememberMe").is(":checked");
+
+          // 清空之前的错误提示
+          $("#errorAlert").hide().text("");
+
+          // 1. 前端参数验证
+          if (!username) {
+            showError("请输入用户名！");
+            $("#username").focus();
+            return;
+          }
+          if (!password) {
+            showError("请输入密码！");
+            $("#password").focus();
+            return;
+          }
+
+          // 2. 显示加载状态
+          $("#loginBtn").addClass("loading").prop("disabled", true);
+
+          // 3. AJAX请求后端登录接口
+          $.ajax({
+            url: "http://localhost:8080/api/login", // 后端登录接口地址
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({
+              username: username,
+              password: password,
+            }),
+            timeout: 10000, // 超时时间10秒
+            success: function (response) {
+              if (response.code === 200) {
+                // 登录成功
+                if (rememberMe) {
+                  localStorage.setItem("rememberMe", "true");
+                  localStorage.setItem("username", username);
+                } else {
+                  localStorage.removeItem("rememberMe");
+                  localStorage.removeItem("username");
+                }
+
+                // 保存用户信息到本地存储（供后续页面使用）
+                localStorage.setItem("userInfo", JSON.stringify(response.data));
+
+                // 根据角色跳转对应页面
+                const role = response.data.role;
+                switch (role) {
+                  case "user":
+                    window.location.href = "user-index.html"; // 用户下单页面
+                    break;
+                  case "workshop":
+                    window.location.href = "workshop-index.html"; // 车间接单页面
+                    break;
+                  case "admin":
+                    window.location.href = "admin-index.html"; // 管理员页面
+                    break;
+                  default:
+                    showError("未知用户角色，无法跳转！");
+                }
+              } else {
+                showError(response.msg || "登录失败，请重试！");
+              }
+            },
+            error: function (xhr, status, error) {
+              // 网络错误/接口异常处理
+              if (status === "timeout") {
+                showError("请求超时，请检查网络！");
+              } else if (xhr.status === 404) {
+                showError("登录接口不存在，请检查后端服务！");
+              } else {
+                showError("登录失败：" + (error || "服务器异常"));
+              }
+            },
+            complete: function () {
+              // 关闭
+              $("#loginBtn").removeClass("loading").prop("disabled", false);
+            },
+          });
+        });
+
+        // 显示错误提示
+        function showError(msg) {
+          $("#errorAlert").text(msg).show();
+          // 3秒后自动隐藏提示
+          setTimeout(() => {
+            $("#errorAlert").fadeOut();
+          }, 3000);
+        }
+      });
+    </script>
+  </body>
+</html>

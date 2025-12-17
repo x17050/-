@@ -1,0 +1,16 @@
+---
+# OpenRewrite configuration to upgrade code to Java 21
+type: specs.openrewrite.org/v1beta/recipe
+name: upgrade-to-java-21
+displayName: Upgrade to Java 21
+recipeList:
+  - org.openrewrite.java.migrate.UpgradeToJava21
+---
+# Upgrade Spring Boot to 3.3.x
+type: specs.openrewrite.org/v1beta/recipe
+name: upgrade-spring-boot-3-3
+displayName: Upgrade Spring Boot to 3.3.x
+recipeDependencies:
+  - org.openrewrite.recipe:rewrite-spring:5.47.3
+recipeList:
+  - org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_3
